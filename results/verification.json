@@ -1,0 +1,256 @@
+{
+  "definitions": {
+    "A used: succeeded - payouts": {
+      "q2": 559534.0,
+      "q3": 525746.05,
+      "change_pct": -6.039
+    },
+    "B succeeded only (ignore payouts)": {
+      "q2": 559534.0,
+      "q3": 536436.05,
+      "change_pct": -4.128
+    },
+    "C succeeded+refunded - payouts": {
+      "q2": 570807.0,
+      "q3": 533940.85,
+      "change_pct": -6.459
+    },
+    "D every attempted charge - payouts": {
+      "q2": 590012.0,
+      "q3": 551650.3,
+      "change_pct": -6.502
+    },
+    "E A but last day of each quarter dropped": {
+      "q2": 559025.0,
+      "q3": 524095.35,
+      "change_pct": -6.248
+    }
+  },
+  "reconcile_cent": {
+    "python_sum_q2": 559534.0,
+    "sql_q2": 559534.0,
+    "python_sum_q3": 536436.05,
+    "sql_q3": 536436.05,
+    "raw_rows": 17540
+  },
+  "eu_did_inputs": {
+    "EU": {
+      "n": 3583,
+      "n_paying_q2": 1589,
+      "n_paying_q3": 1485,
+      "r2": 241015.0,
+      "r3": 212792.05
+    },
+    "non-EU": {
+      "n": 4969,
+      "n_paying_q2": 2108,
+      "n_paying_q3": 2126,
+      "r2": 318519.0,
+      "r3": 323644.0
+    }
+  },
+  "eu_did_pp": -5.737,
+  "eu_growth_ratio": {
+    "EU": 0.8829,
+    "non-EU": 1.0161
+  },
+  "eu_structural": {
+    "price_uplift_usd": 17848.05,
+    "price_uplift_pp": 3.19,
+    "eu_payments_post_hike": 1848,
+    "monthly": {
+      "active_at_hike_EU": 1166,
+      "cancel_EU": 451,
+      "rate_EU": 0.3868,
+      "active_at_hike_nonEU": 1586,
+      "cancel_nonEU": 143,
+      "rate_nonEU": 0.0902,
+      "eu_pre_hike_rate": 0.1029,
+      "excess_cancels_vs_nonEU": 345.9,
+      "excess_se": 18.6,
+      "forgone_q3_usd_per_cancel": 46.69,
+      "loss_usd": 15469.25,
+      "loss_pp": 2.765,
+      "loss_pp_if_baseline_is_EU_pre_rate": 2.646
+    },
+    "annual": {
+      "due_EU": 162,
+      "not_renewed_EU": 61,
+      "due_nonEU": 251,
+      "not_renewed_nonEU": 54,
+      "rate_EU": 0.3765,
+      "rate_nonEU": 0.2151,
+      "excess_non_renewals": 26.1,
+      "excess_se": 7.5,
+      "loss_usd": 13827.3,
+      "loss_pp": 2.471
+    },
+    "net_pp": -2.046,
+    "net_range_pp": [
+      -3.459,
+      -0.633
+    ],
+    "success_rate_assumed": 0.958
+  },
+  "eu_exposure_adjusted": {
+    "renewals_due": {
+      "Q2": {
+        "EU": 282,
+        "non-EU": 390
+      },
+      "Q3": {
+        "EU": 249,
+        "non-EU": 387
+      }
+    },
+    "relative_exposure_EU_vs_nonEU": 0.8898,
+    "did_monthly_pp": -1.467,
+    "did_annual_pp_naive": -4.294,
+    "did_annual_pp_exposure_adjusted": -1.384,
+    "total_naive_pp": -5.761,
+    "total_exposure_adjusted_pp": -2.851
+  },
+  "eu_revenue_by_plan": [
+    {
+      "grp": "EU",
+      "plan": "annual",
+      "q2": 142560.0,
+      "q3": 123720.0
+    },
+    {
+      "grp": "EU",
+      "plan": "monthly",
+      "q2": 98455.0,
+      "q3": 89072.05
+    },
+    {
+      "grp": "non-EU",
+      "plan": "annual",
+      "q2": 184800.0,
+      "q3": 191520.0
+    },
+    {
+      "grp": "non-EU",
+      "plan": "monthly",
+      "q2": 133719.0,
+      "q3": 132124.0
+    }
+  ],
+  "mix": {
+    "n": {
+      "Q2": 450,
+      "Q3": 549
+    },
+    "monthly_share": {
+      "Q2": 0.6,
+      "Q3": 0.6576
+    },
+    "share_shift_se": 0.0307,
+    "arpu_in_quarter": {
+      "Q2": {
+        "monthly": 53.92,
+        "annual": 464.0
+      },
+      "Q3": {
+        "monthly": 56.8,
+        "annual": 473.23
+      }
+    },
+    "mix_pp_Q3_arpu_weights": -2.352,
+    "mix_pp_Q2_arpu_weights": -2.316,
+    "three_way_new_cohort_delta_pp": {
+      "volume": 3.856,
+      "mix": -2.316,
+      "arpu_rate": 0.496,
+      "interaction_and_rounding": -0.0,
+      "total": 2.036
+    },
+    "mix_range_pp": [
+      -4.812,
+      0.108
+    ]
+  },
+  "referral": {
+    "launch": "2025-09-01",
+    "referrals": 87,
+    "payouts": 10690.0,
+    "post_signups": 192,
+    "expected_post_signups": 172.7,
+    "excess_signups": 19.3,
+    "poisson_one_sided_p": 0.079,
+    "monthly_placebo": {
+      "2025-04": {
+        "count": 150,
+        "expected_from_other_months_in_quarter": 147.5,
+        "deviation": 2.5
+      },
+      "2025-05": {
+        "count": 146,
+        "expected_from_other_months_in_quarter": 157.1,
+        "deviation": -11.1
+      },
+      "2025-06": {
+        "count": 154,
+        "expected_from_other_months_in_quarter": 145.6,
+        "deviation": 8.4
+      },
+      "2025-07": {
+        "count": 170,
+        "expected_from_other_months_in_quarter": 192.6,
+        "deviation": -22.6
+      },
+      "2025-08": {
+        "count": 187,
+        "expected_from_other_months_in_quarter": 184.0,
+        "deviation": 3.0
+      },
+      "2025-09": {
+        "count": 192,
+        "expected_from_other_months_in_quarter": 172.7,
+        "deviation": 19.3
+      }
+    },
+    "avg_sept_signup_q3_rev": 188.93,
+    "break_even_incremental_share": 0.65,
+    "estimated_incremental_share_of_referrals": 0.221,
+    "net_pp_if_incremental_share_is": {
+      "0.0": -1.911,
+      "0.1": -1.617,
+      "0.2": -1.323,
+      "0.3": -1.029,
+      "0.4": -0.735,
+      "0.6": -0.148,
+      "1.0": 1.027
+    }
+  },
+  "cohort_accounting_pp": {
+    "existing_base_EU": -7.748,
+    "existing_base_nonEU": -1.829,
+    "new_signup_cohort_delta": 2.036,
+    "referral_payouts_delta": -1.911,
+    "total": -6.039,
+    "existing_base_nonEU_ratio_q3_over_q2": 0.9611,
+    "existing_base_EU_ratio_q3_over_q2": 0.7818
+  },
+  "sample_sizes": {
+    "workspaces_total": 8552,
+    "eu_workspaces": 3583,
+    "non_eu_workspaces": 4969,
+    "eu_monthly_active_at_hike": 1166,
+    "eu_annual_renewals_due_in_window": 162,
+    "q2_signups": 450,
+    "q3_signups": 549,
+    "referrals": 87,
+    "post_launch_signups": 192,
+    "experiment": [
+      {
+        "arm": "control",
+        "n": 115
+      },
+      {
+        "arm": "treatment",
+        "n": 106
+      }
+    ]
+  }
+}

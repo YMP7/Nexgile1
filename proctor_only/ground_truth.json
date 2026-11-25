@@ -1,0 +1,81 @@
+{
+  "seed": 20250925,
+  "revenue_definition": "succeeded payments in quarter minus referral payouts in quarter (Q2=Apr-Jun, Q3=Jul-Sep 2025)",
+  "targets_pp_of_q2_revenue": {
+    "mix": -2.5,
+    "eu": -2.0,
+    "referral": -1.0,
+    "total": -6.0,
+    "residual": -0.5
+  },
+  "realized_pp_of_q2_revenue": {
+    "total": -6.039,
+    "mix": -2.472,
+    "eu": -1.965,
+    "referral": -1.034,
+    "residual": -0.568
+  },
+  "revenue": {
+    "q2": 559534.0,
+    "q3_net": 525746.05
+  },
+  "effect_method": "one-at-a-time counterfactual re-simulation on shared random draws; residual = total - sum(mix, eu, referral)",
+  "tuned_parameters": {
+    "p3": 0.658447265625,
+    "eu_uplift": 0.17958984375000003,
+    "k": 25.5615234375,
+    "f": 0.86015625
+  },
+  "fixed_parameters": {
+    "prices": {
+      "monthly": 29.0,
+      "annual": 480.0
+    },
+    "eu_countries": [
+      "DE",
+      "FR",
+      "ES",
+      "IT",
+      "NL"
+    ],
+    "eu_price_hike": 1.15,
+    "eu_hike_date": "2025-08-01",
+    "eu_cancel_uplift_monthly_hazard": 0.1796,
+    "eu_annual_renewal_drop": 0.2155,
+    "base_monthly_hazard": 0.05,
+    "base_annual_renewal": 0.8,
+    "payment_fail_rate": 0.03,
+    "refund_rate": 0.02,
+    "signups": {
+      "q2": 450,
+      "q3": 549,
+      "growth": 0.22
+    },
+    "monthly_plan_share": {
+      "q2": 0.6,
+      "q3": 0.6584
+    },
+    "referral": {
+      "launch": "2025-09-01",
+      "cannibalized_share": 0.7,
+      "payouts_by_partner_tier": [
+        100.0,
+        120.0,
+        150.0
+      ],
+      "incremental_referred_signups": 26,
+      "referrals": 87
+    },
+    "retention_30d": {
+      "q2": 0.41,
+      "q3": 0.52,
+      "definition": "any event 30-36 days after signup",
+      "experiment_countries": [
+        "DE",
+        "US"
+      ],
+      "note": "Q3 rolled out new onboarding to all signups except experiment control arm"
+    },
+    "unexplained_residual_mechanism": "smaller 2024-Q3 annual renewal cohort (renewal-cohort size), no causal story in the data"
+  }
+}

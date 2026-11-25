@@ -1,0 +1,248 @@
+{
+  "summary": {
+    "q2_net_revenue": 559534.0,
+    "q3_net_revenue": 525746.05,
+    "revenue_change_pct": -6.0386,
+    "signups": {
+      "q2": 450,
+      "q3": 549,
+      "change_pct": 22.0
+    },
+    "monthly_plan_share_of_signups": {
+      "q2": 0.6,
+      "q3": 0.6576
+    },
+    "retention_30d": {
+      "Q2": 0.4089,
+      "Q3": 0.5191
+    },
+    "bridge": [
+      {
+        "cause": "Plan mix shift (more monthly signups)",
+        "pct_points": -2.3519,
+        "range": [
+          -4.8118,
+          0.1081
+        ]
+      },
+      {
+        "cause": "EU price increase (net of extra cancellations)",
+        "pct_points": -2.0461,
+        "range": [
+          -3.4589,
+          -0.6333
+        ]
+      },
+      {
+        "cause": "Referral programme (cannibalisation net of payouts)",
+        "pct_points": -1.2603,
+        "range": [
+          -1.9105,
+          -0.1616
+        ]
+      },
+      {
+        "cause": "Unexplained",
+        "pct_points": -0.3804,
+        "range": [
+          -3.3489,
+          2.5881
+        ]
+      }
+    ],
+    "recommendations": {
+      "onboarding": "keep",
+      "europe_price": "change",
+      "referral": "stop"
+    },
+    "memo": "Net revenue (succeeded payments minus referral payouts) fell 6.0% from $559,534 in Q2 to $525,746 in Q3, even though signups rose 22% and 30-day retention rose from 41% to 52%.\n\nWhere the revenue went, in percentage points of Q2 revenue: Plan mix shift -2.4pp (range -4.8 to +0.1); EU price increase -2.0pp (range -3.5 to -0.6); Referral programme -1.3pp (range -1.9 to -0.2); Unexplained -0.4pp (range -3.3 to +2.6).\n\nOnboarding: keep (medium confidence) - 30-day retention is +17.6pp higher in treatment, but no revenue effect is shown yet. Europe price: change (medium confidence) - the increase costs 2.0pp net of extra cancellations. Referral programme: stop (medium confidence) - about 78% of referrals look cannibalised, and in-quarter revenue does not cover the payouts (later payments are not counted).\n\nCaveats: small samples (450 and 549 signups, 87 referrals); ranges are 95% and reflect count noise only; the data is synthetic."
+  },
+  "bridge": [
+    {
+      "cause": "Plan mix shift (more monthly signups)",
+      "pct_points": -2.3519,
+      "range": [
+        -4.8118,
+        0.1081
+      ],
+      "evidence_query": "WITH c AS (\n  SELECT workspace_id, plan,\n         CASE WHEN signup_date BETWEEN '2025-04-01' AND '2025-06-30' THEN 'Q2' ELSE 'Q3' END q\n  FROM workspaces WHERE signup_date BETWEEN '2025-04-01' AND '2025-09-30')\nSELECT c.q, c.plan, COUNT(DISTINCT c.workspace_id) AS n,\n       COALESCE(SUM(CASE WHEN p.status='succeeded' THEN p.amount END),0) AS rev\nFROM c LEFT JOIN payments p ON p.workspace_id=c.workspace_id\n  AND p.payment_date BETWEEN CASE c.q WHEN 'Q2' THEN '2025-04-01' ELSE '2025-07-01' END\n                         AND CASE c.q WHEN 'Q2' THEN '2025-06-30' ELSE '2025-09-30' END\nGROUP BY c.q, c.plan"
+    },
+    {
+      "cause": "EU price increase (net of extra cancellations)",
+      "pct_points": -2.0461,
+      "range": [
+        -3.4589,
+        -0.6333
+      ],
+      "evidence_query": "SELECT SUM(p.amount - CASE w.plan WHEN 'monthly' THEN 29.0 ELSE 480.0 END) AS u\nFROM payments p JOIN workspaces w USING(workspace_id)\nWHERE p.status='succeeded' AND w.country IN ('DE','ES','FR','IT','NL') AND p.payment_date BETWEEN '2025-08-01' AND '2025-09-30';\nSELECT CASE WHEN w.country IN ('DE','ES','FR','IT','NL') THEN 'EU' ELSE 'non-EU' END AS grp,\n SUM(s.start_date<'2025-05-01' AND (s.cancel_date IS NULL OR s.cancel_date>='2025-05-01')) AS pre_active,\n SUM(s.start_date<'2025-05-01' AND s.cancel_date BETWEEN '2025-05-01' AND '2025-06-30') AS pre_cancel,\n SUM(s.start_date<'2025-08-01' AND (s.cancel_date IS NULL OR s.cancel_date>='2025-08-01')) AS post_active,\n SUM(s.start_date<'2025-08-01' AND s.cancel_date BETWEEN '2025-08-01' AND '2025-09-30') AS post_cancel\nFROM subscriptions s JOIN workspaces w USING(workspace_id)\nWHERE s.plan='monthly' GROUP BY grp;\nSELECT CASE WHEN w.country IN ('DE','ES','FR','IT','NL') THEN 'EU' ELSE 'non-EU' END AS grp,\n SUM(kind='renewed') AS renewed, SUM(kind='not_renewed') AS not_renewed FROM (\n  SELECT w.workspace_id, 'renewed' AS kind FROM payments p JOIN workspaces w USING(workspace_id)\n   WHERE w.plan='annual' AND p.payment_date BETWEEN '2025-08-01' AND '2025-09-30' AND p.payment_date > w.signup_date\n  UNION ALL\n  SELECT w.workspace_id, 'not_renewed' FROM subscriptions s JOIN workspaces w USING(workspace_id)\n   WHERE s.plan='annual' AND s.cancel_date BETWEEN '2025-08-01' AND '2025-09-30') x\n JOIN workspaces w USING(workspace_id) GROUP BY grp"
+    },
+    {
+      "cause": "Referral programme (cannibalisation net of payouts)",
+      "pct_points": -1.2603,
+      "range": [
+        -1.9105,
+        -0.1616
+      ],
+      "evidence_query": "SELECT\n SUM(signup_date < '2025-09-01') AS pre_total,\n SUM(signup_date >= '2025-09-01') AS post_total,\n SUM(signup_date >= '2025-09-01' AND workspace_id IN (SELECT referred_workspace_id FROM referrals)) AS post_referred,\n SUM(signup_date >= '2025-09-01' AND workspace_id NOT IN (SELECT referred_workspace_id FROM referrals)) AS post_organic,\n CAST(julianday('2025-09-01')-julianday('2025-07-01') AS INT) AS pre_days,\n CAST(julianday('2025-09-30')-julianday('2025-09-01') AS INT)+1 AS post_days\nFROM workspaces WHERE signup_date BETWEEN '2025-07-01' AND '2025-09-30'"
+    },
+    {
+      "cause": "Unexplained",
+      "pct_points": -0.3804,
+      "range": [
+        -3.3489,
+        2.5881
+      ],
+      "evidence_query": "SELECT\n (SELECT SUM(amount) FROM payments WHERE status='succeeded' AND payment_date BETWEEN '2025-04-01' AND '2025-06-30') AS q2_gross,\n (SELECT SUM(amount) FROM payments WHERE status='succeeded' AND payment_date BETWEEN '2025-07-01' AND '2025-09-30') AS q3_gross,\n (SELECT COALESCE(SUM(payout_amount),0) FROM referrals WHERE referral_date BETWEEN '2025-04-01' AND '2025-06-30') AS q2_payouts,\n (SELECT COALESCE(SUM(payout_amount),0) FROM referrals WHERE referral_date BETWEEN '2025-07-01' AND '2025-09-30') AS q3_payouts,\n (SELECT COUNT(*) FROM workspaces WHERE signup_date BETWEEN '2025-04-01' AND '2025-06-30') AS q2_signups,\n (SELECT COUNT(*) FROM workspaces WHERE signup_date BETWEEN '2025-07-01' AND '2025-09-30') AS q3_signups"
+    }
+  ],
+  "initiatives": {
+    "onboarding": {
+      "name": "onboarding",
+      "effect": {
+        "metric": "30-day retention, treatment minus control (pp)",
+        "value": 17.621,
+        "range": [
+          4.6318,
+          30.6102
+        ]
+      },
+      "evidence": {
+        "retention_by_arm": {
+          "control": 0.4087,
+          "treatment": 0.5849
+        },
+        "arm_sizes": {
+          "control": 115,
+          "treatment": 106
+        },
+        "cohort_retention": {
+          "Q2": 0.4089,
+          "Q3": 0.5191
+        },
+        "revenue_link": {
+          "metric": "monthly-plan workspaces still paying >=55 days after signup, treatment minus control (pp)",
+          "value": 19.0476,
+          "range": [
+            -3.995,
+            42.0903
+          ]
+        },
+        "caveat": "Randomised in two countries only; Q3 cohort retention also reflects rollout to all other signups."
+      },
+      "evidence_query": "WITH r AS (\n  SELECT w.workspace_id, w.signup_date,\n         MAX(CASE WHEN julianday(substr(e.event_timestamp,1,10))-julianday(w.signup_date)>=30 THEN 1 ELSE 0 END) AS retained\n  FROM workspaces w LEFT JOIN events e USING(workspace_id)\n  WHERE w.signup_date BETWEEN '2025-04-01' AND '2025-09-30' GROUP BY w.workspace_id)\nSELECT x.arm, COUNT(*) AS n, SUM(r.retained) AS retained\nFROM experiment x JOIN r USING(workspace_id) GROUP BY x.arm",
+      "recommendation": "keep",
+      "confidence": "medium",
+      "confidence_rule": "low: 95% range includes 0; high: range excludes 0 and its half-width is at most half the estimate; medium: range excludes 0 but is wider"
+    },
+    "europe_price": {
+      "name": "europe_price",
+      "effect": {
+        "metric": "price uplift minus excess cancellations and non-renewals (pp of Q2 revenue)",
+        "value": -2.0461,
+        "range": [
+          -3.4589,
+          -0.6333
+        ]
+      },
+      "evidence": {
+        "price_increase_markets": [
+          "DE",
+          "ES",
+          "FR",
+          "IT",
+          "NL"
+        ],
+        "monthly_cancel_rate_pre_vs_post_hike": {
+          "EU": {
+            "pre_rate": 0.1029,
+            "post_rate": 0.3868
+          },
+          "non-EU": {
+            "pre_rate": 0.0794,
+            "post_rate": 0.0902
+          }
+        },
+        "price_complaint_tickets_since_hike": {
+          "EU": 232
+        },
+        "mechanism": {
+          "price_uplift_pp": 3.1898,
+          "monthly_loss_pp": 2.7647,
+          "annual_loss_pp": 2.4712,
+          "monthly": {
+            "active_at_hike": {
+              "EU": 1166,
+              "non-EU": 1586
+            },
+            "cancelled": {
+              "EU": 451,
+              "non-EU": 143
+            },
+            "excess_cancels": 345.8689,
+            "forgone_q3_usd_per_cancel": 46.6861
+          },
+          "annual": {
+            "renewals_due": {
+              "EU": 162,
+              "non-EU": 251
+            },
+            "not_renewed": {
+              "EU": 61,
+              "non-EU": 54
+            },
+            "excess_non_renewals": 26.1474
+          },
+          "payment_success_rate": 0.958
+        },
+        "cross_check_revenue_ratio_did": {
+          "pp": -5.7371,
+          "range": [
+            -11.5165,
+            -0.1236
+          ],
+          "caveat": "EU had 12% fewer annual renewals fall due; this inflates the DiD (see verification)"
+        }
+      },
+      "evidence_query": "SELECT SUM(p.amount - CASE w.plan WHEN 'monthly' THEN 29.0 ELSE 480.0 END) AS u\nFROM payments p JOIN workspaces w USING(workspace_id)\nWHERE p.status='succeeded' AND w.country IN ('DE','ES','FR','IT','NL') AND p.payment_date BETWEEN '2025-08-01' AND '2025-09-30'",
+      "recommendation": "change",
+      "confidence": "medium",
+      "confidence_rule": "low: 95% range includes 0; high: range excludes 0 and its half-width is at most half the estimate; medium: range excludes 0 but is wider"
+    },
+    "referral": {
+      "name": "referral",
+      "effect": {
+        "metric": "net revenue after payouts (pp of Q2 revenue)",
+        "value": -1.2603,
+        "range": [
+          -1.9105,
+          -0.1616
+        ]
+      },
+      "evidence": {
+        "launch_date": "2025-09-01",
+        "referrals": 87,
+        "partners": 12,
+        "payouts": 10690.0,
+        "signups_per_day_before_launch": 5.7581,
+        "signups_per_day_after_launch": 6.4,
+        "organic_signups_per_day_after_launch": 3.5,
+        "estimated_incremental_signups": {
+          "value": 19.2581,
+          "range": [
+            0.0,
+            51.7955
+          ]
+        },
+        "estimated_cannibalised_share": 0.7786,
+        "avg_q3_revenue_per_signup": {
+          "organic": 175.0167,
+          "referred": 205.7213
+        }
+      },
+      "evidence_query": "SELECT\n SUM(signup_date < '2025-09-01') AS pre_total,\n SUM(signup_date >= '2025-09-01') AS post_total,\n SUM(signup_date >= '2025-09-01' AND workspace_id IN (SELECT referred_workspace_id FROM referrals)) AS post_referred,\n SUM(signup_date >= '2025-09-01' AND workspace_id NOT IN (SELECT referred_workspace_id FROM referrals)) AS post_organic,\n CAST(julianday('2025-09-01')-julianday('2025-07-01') AS INT) AS pre_days,\n CAST(julianday('2025-09-30')-julianday('2025-09-01') AS INT)+1 AS post_days\nFROM workspaces WHERE signup_date BETWEEN '2025-07-01' AND '2025-09-30'",
+      "recommendation": "stop",
+      "confidence": "medium",
+      "confidence_rule": "low: 95% range includes 0; high: range excludes 0 and its half-width is at most half the estimate; medium: range excludes 0 but is wider"
+    }
+  }
+}
